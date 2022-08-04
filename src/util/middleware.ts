@@ -6,6 +6,9 @@ import { getConnectionByName, getConnection } from '../database/models';
 import { AppError } from './appError';
 import { includesSome, paginationSchema, buildResponse, verifyToken } from './utility';
 
+const config = process.env;
+const { CONNECTION_NAME } = config;
+
 export const inputValidator = (schema: any) => {
   return (req, res, next) => {
     if (schema.paginationQuery) {
@@ -92,34 +95,26 @@ export const resolveConnection = async (req, res, next) => {
     query = { 'apiKey.live': apiKey };
   }
 
-  const tenantConnection = getConnectionByName('tenant');
+  const tenantConnection = getConnectionByName(CONNECTION_NAME);
   const { models: tenantModels } = tenantConnection;
-  let tenant;
-  // IDEA: optionally cache tenant for performance
-  // FIXME: possible leak of GOD MODE
-  if (apiKey === 'provider-skijne939fijfj') {
-    tenant = { name: 'provider' };
-    // HACK: for quick testing
-  } else {
-    tenant = await tenantModels.Tenant.findOne(query).lean();
-    if (!tenant) {
-      return buildResponse(res, 401, {
-        status: false,
-        message: 'unauthorized API key, your API key is not recognized',
-      });
-    }
+  const tenant = await tenantModels.Tenant.findOne(query).lean();
+  if (!tenant) {
+    return buildResponse(res, 401, {
+      status: false,
+      message: 'unauthorized API key, your API key is not recognized',
+    });
+  }
 
-    if (
-      !apiKey.includes('test') &&
-      (includesSome(tenant.security.blacklist, [req.ip]) ||
-        (!includesSome(tenant.security.whitelist, ['0.0.0.0']) &&
-          !includesSome(tenant.security.whitelist, [req.ip])))
-    ) {
-      return buildResponse(res, 401, {
-        status: false,
-        message: 'unauthorized host, your host ip is not permitted',
-      });
-    }
+  if (
+    !apiKey.includes('test') &&
+    (includesSome(tenant.security.blacklist, [req.ip]) ||
+      (!includesSome(tenant.security.whitelist, ['0.0.0.0']) &&
+        !includesSome(tenant.security.whitelist, [req.ip])))
+  ) {
+    return buildResponse(res, 401, {
+      status: false,
+      message: 'unauthorized host, your host ip is not permitted',
+    });
   }
 
   // Run the application in the defined namespace. It will contextualize every underlying function calls.

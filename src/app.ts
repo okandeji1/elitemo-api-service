@@ -50,8 +50,14 @@ Object.keys(db).forEach((connection) => {
 app.set('port', Number(process.env.PORT) || 9090);
 app.use(express.static(path.join('public'), { maxAge: 31557600000 }));
 
+app.use(
+  express.urlencoded({
+    extended: true,
+  }),
+);
 app.use(compression());
 app.use(cors());
+app.use(express.json());
 
 // routes
 app.use('/api/v1/users', userRouter);
