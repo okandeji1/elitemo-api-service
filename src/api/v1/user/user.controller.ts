@@ -2,8 +2,9 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 // import jwt from 'jsonwebtoken';
 import { generateId } from '../../../@core/universal';
-import { getConnectionByName } from '../../../database/models';
+import { getConnection, getConnectionByName } from '../../../database/models';
 import { AppError, catchAsyncError } from '../../../util/appError';
+import { generateTokens, renewAccessToken } from '../../../util/utility';
 
 const config = process.env;
 const { CONNECTION_NAME } = config;
@@ -94,8 +95,8 @@ export const registerTenant = catchAsyncError(async (req: Request, res: Response
   });
 });
 
-export const registerUser = catchAsyncError(async (req: Request, res: Response) => {
-  const tenantConnection = getConnectionByName(req.query.tenant);
+export const registerUser = catchAsyncError(async (req, res) => {
+  const tenantConnection = getConnection(req.query.tenant);
   const { models: tenantModels } = tenantConnection;
   const obj = req.body;
 
@@ -147,5 +148,222 @@ export const registerUser = catchAsyncError(async (req: Request, res: Response) 
       userId: newUser.userId,
       createdAt: newUser.createdAt,
     },
+  });
+});
+
+export const loginUser = catchAsyncError(async (req, res) => {
+  const tenantConnection = getConnection(req.query.tenant);
+  const { models: tenantModels } = tenantConnection;
+  const obj = req.body;
+  const query = {
+    username: obj.username,
+  };
+
+  const user = await tenantModels.User.findOne(query).lean();
+
+  if (!user) {
+    throw new AppError('user does not exist', 404);
+  }
+
+  const isValidPassword = await bcrypt.compare(obj.password, user.password);
+
+  if (!isValidPassword) {
+    throw new AppError('your username/password combination is not correct', 401);
+  }
+
+  const { accessToken, refreshToken } = generateTokens({
+    username: user.username,
+    role: user.role,
+    userId: user.userId,
+  });
+
+  user.accessToken = accessToken;
+  user.refreshToken = refreshToken;
+  user.password = undefined;
+
+  return res.status(200).json({
+    status: true,
+    message: 'user logged in successfully',
+    data: user,
+  });
+});
+
+export const refreshToken = catchAsyncError(async (req, res) => {
+  const obj = req.query;
+
+  const { accessToken, refreshToken } = await renewAccessToken(
+    req.headers?.authorization.split(' ')[1],
+    obj.refreshToken,
+  );
+
+  return res.status(200).json({
+    status: true,
+    message: 'token refreshed successfully',
+    data: {
+      accessToken,
+      refreshToken,
+    },
+  });
+});
+
+export const updateUser = catchAsyncError(async (req, res) => {
+  const tenantConnection = getConnection(req.query.tenant);
+  const { models: tenantModels } = tenantConnection;
+
+  const session = await tenantConnection.startSession();
+  session.startTransaction();
+
+  const obj = req.body;
+  const opts = { session, new: true };
+
+  if (obj.password) {
+    const hash = await bcrypt.hash(obj.password, 10);
+    obj.password = hash;
+  }
+
+  const updatedUser: any = await tenantModels.User.findOneAndUpdate(
+    { username: obj.username },
+    obj,
+    opts,
+  );
+  if (!updatedUser) {
+    throw new AppError('User does not exist', 404);
+  }
+
+  await session.commitTransaction();
+  session.endSession();
+  return res.status(200).json({
+    status: true,
+    message: 'user updated successfully',
+    data: updatedUser,
+  });
+});
+
+export const getUsers = catchAsyncError(async (req, res) => {
+  const obj = req.query;
+
+  const tenantConnection = getConnection(req.query.tenant);
+  const { models: tenantModels } = tenantConnection;
+
+  const { limit, page } = req.query;
+
+  let query: any = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (key === 'tenant' || key === 'limit' || key === 'page') {
+      continue;
+    }
+    if (key === 'status') {
+      // @ts-ignore
+      const items = value.split(',');
+      let $or: any = [];
+      for (const item of items) {
+        $or = [...$or, { [key]: item }];
+      }
+      query.$and = query.$and || [];
+      query.$and.push({ $or });
+
+      continue;
+    }
+    query = { ...query, [key]: value };
+  }
+
+  const options = {
+    page,
+    limit,
+    sort: { createdAt: 'desc' },
+    collation: {
+      locale: 'en',
+    },
+    lean: true,
+    projection: {
+      password: 0,
+    },
+  };
+
+  const users: any = await tenantModels.User.paginate(query, options);
+
+  return res.status(200).json({
+    status: true,
+    message: 'found user(s)',
+    data: users.docs,
+    meta: {
+      total: users.totalDocs,
+      skipped: users.page * users.limit,
+      perPage: users.limit,
+      page: users.page,
+      pageCount: users.totalPages,
+      hasNextPage: users.hasNextPage,
+      hasPrevPage: users.hasPrevPage,
+    },
+  });
+});
+
+export const getUser = catchAsyncError(async (req, res): Promise<any> => {
+  const tenantConnection = getConnection(req.query.tenant);
+  const { models: tenantModels } = tenantConnection;
+
+  const query = { username: req.user.username };
+  const user = await tenantModels.User.findOne(query).lean();
+
+  return res.status(200).json({
+    status: true,
+    message: 'found user(s)',
+    data: user,
+  });
+});
+
+export const changePassword = catchAsyncError(async (req, res) => {
+  const obj = req.body;
+  const tenantConnection = getConnection(req.query.tenant);
+  const { models: tenantModels } = tenantConnection;
+
+  const user = await tenantModels.User.findOne({ username: req?.user.username });
+
+  if (!user) {
+    throw new AppError('user not found', 404);
+  }
+
+  const isValidPassword = await bcrypt.compare(obj.password, user.password);
+  if (!isValidPassword) {
+    throw new AppError('your password is not correct', 401);
+  }
+
+  const passwordHash = await bcrypt.hash(obj.newPassword, 10);
+
+  const updatedUser: any = await tenantModels.User.findOneAndUpdate(
+    { username: req?.user.username },
+    { password: passwordHash },
+    { new: true },
+  );
+
+  return res.status(200).json({
+    status: true,
+    message: 'password changed successfully',
+    data: {
+      user: updatedUser.username,
+      role: updatedUser.role,
+      firstName: updatedUser.firstName,
+      lastName: updatedUser.lastName,
+    },
+  });
+});
+
+export const deleteUser = catchAsyncError(async (req, res) => {
+  const obj = req.query;
+  const tenantConnection = getConnection(req.query.tenant);
+  const { models: tenantModels } = tenantConnection;
+
+  const query = { username: obj.username };
+
+  const user: any = await tenantModels.User.findOneAndDelete(query);
+
+  if (!user) {
+    throw new AppError('user not exist', 404);
+  }
+
+  return res.status(200).json({
+    status: true,
+    message: 'user deleted successfully',
+    data: 'user has been deleted',
   });
 });
