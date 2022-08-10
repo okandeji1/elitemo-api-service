@@ -12,6 +12,14 @@ export const BlogSchema = new Schema({
   img: {
     type: String,
   },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 BlogSchema.plugin(mongoosePaginate);
 

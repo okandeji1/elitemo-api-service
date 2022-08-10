@@ -7,6 +7,14 @@ export const RoleSchema = new Schema({
     required: true,
     unique: true,
   },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 RoleSchema.plugin(mongoosePaginate);
 

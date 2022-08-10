@@ -12,6 +12,14 @@ export const MerchantSchema = new Schema({
   logo: {
     type: String,
   },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 MerchantSchema.plugin(mongoosePaginate);
 
