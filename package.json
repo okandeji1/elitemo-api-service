@@ -7,7 +7,14 @@
     "start": "doppler run --command='NODE_PATH=./build node build/index.js'",
     "build": "tsc",
     "start:dev": "doppler run --command='tsc-watch --noClear --onSuccess \"node --inspect=0.0.0.0:9229 ./build/index.js\"'",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "tsc --noEmit && eslint \"**/*.{js,ts}\" --quiet --fix",
+    "code:check": "yarn code:lint; yarn code:format --check",
+    "code:clean": "yarn code:lint --fix; yarn code:format --write",
+    "code:lint": "eslint --ext .js,.jsx,.ts,.tsx \"src/\"",
+    "code:format": "prettier './src/**/**.{js,jsx,ts,tsx}'",
+    "code:check:rules": "eslint --print-config .eslintrc.js | eslint-config-prettier-check",
+    "prepare": "husky install"
   },
   "keywords": [
     "automobile"
