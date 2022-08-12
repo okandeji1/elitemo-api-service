@@ -37,15 +37,6 @@ export const inputValidator = (schema: any) => {
 export const isAuthenticated = (req, res, next) => {
   let accessToken = req.headers?.authorization || req.query.accessToken;
   if (!accessToken) {
-    // HACK: to format unknown connection as invalid credential for globalbet
-    if (res.thirdparty === 'GLOBAL_BET') {
-      res.globalBetError = {
-        statusCode: 400,
-        Code: 'INVALID_SESSION',
-        Details: 'access token not found',
-        preTag: 'Error',
-      };
-    }
     throw new AppError('access token not found', 401);
   }
   try {
@@ -58,15 +49,6 @@ export const isAuthenticated = (req, res, next) => {
 
     next();
   } catch (error: any) {
-    // HACK: to format unknown connection as invalid credential for globalbet
-    if (res.thirdparty === 'GLOBAL_BET') {
-      res.globalBetError = {
-        statusCode: 400,
-        Code: 'INVALID_SESSION',
-        Details: error.message || 'invalid access token',
-        preTag: 'Error',
-      };
-    }
     if (error.name?.includes('JsonWebTokenError') || error.name?.includes('TokenExpiredError')) {
       throw new AppError(error.message, 401);
     }
@@ -193,21 +175,5 @@ export const normalize = async (req, res, next) => {
   delete req.body.passportPhoto;
   delete req.body.idCard;
 
-  next();
-};
-
-export const normalizeTransporter = async (req, res, next) => {
-  req.body = {
-    ...req.body,
-    phone: {
-      code: req.body.phoneCode,
-      number: req.body.phoneNumber,
-    },
-  };
-
-  delete req.body.phoneCode;
-  delete req.body.phoneNumber;
-  delete req.body.passport;
-  delete req.body.signature;
   next();
 };

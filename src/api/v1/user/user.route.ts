@@ -1,17 +1,12 @@
 import express from 'express';
 import * as userController from './user.controller';
-import {
-  inputValidator,
-  resolveConnection,
-  isAuthenticated,
-  isPermitted,
-  // normalize,
-} from '../../../util/middleware';
+import { inputValidator, resolveConnection, isAuthenticated } from '../../../util/middleware';
 import {
   changePasswordSchema,
   getUserSchema,
   loginUserSchema,
   refreshTokenSchema,
+  registerTenantSchema,
   registerUserSchema,
   setupTenantSchema,
   updateUserSchema,
@@ -19,9 +14,16 @@ import {
 export const userRouter = express.Router();
 
 userRouter.post(
-  '/setup-tenant',
+  '/tenant/setup',
   inputValidator({ body: setupTenantSchema }),
   userController.tenantSetUp,
+);
+
+userRouter.post(
+  '/tenant/register',
+  inputValidator({ body: registerTenantSchema }),
+  resolveConnection,
+  userController.registerTenant,
 );
 
 userRouter.post(
@@ -40,7 +42,7 @@ userRouter.post(
 );
 
 userRouter.get(
-  '/refresh-token',
+  '/refresh/token',
   inputValidator({ query: refreshTokenSchema }),
   resolveConnection,
   userController.refreshToken,
@@ -51,24 +53,16 @@ userRouter.put(
   inputValidator({ body: updateUserSchema }),
   resolveConnection,
   isAuthenticated,
-  isPermitted(['user:update:own', 'user:update:any']),
   userController.updateUser,
 );
 
-userRouter.delete(
-  '/delete',
-  resolveConnection,
-  isAuthenticated,
-  isPermitted(['user:delete:any']),
-  userController.deleteUser,
-);
+userRouter.delete('/delete', resolveConnection, isAuthenticated, userController.deleteUser);
 
 userRouter.put(
-  '/change-password',
+  '/change/password',
   inputValidator({ body: changePasswordSchema }),
   resolveConnection,
   isAuthenticated,
-  isPermitted(['user:update:own', 'user:update:any']),
   userController.changePassword,
 );
 
@@ -77,14 +71,7 @@ userRouter.get(
   inputValidator({ query: getUserSchema }),
   resolveConnection,
   isAuthenticated,
-  isPermitted(['user:read:own', 'user:read:any']),
   userController.getUsers,
 );
 
-userRouter.get(
-  '/me',
-  resolveConnection,
-  isAuthenticated,
-  isPermitted(['user:read:own', 'user:read:any']),
-  userController.getUser,
-);
+userRouter.get('/me', resolveConnection, isAuthenticated, userController.getUser);

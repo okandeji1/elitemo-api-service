@@ -1,7 +1,7 @@
 import { Schema } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
 
-const SettingSchema = new Schema({
+const CarSchema = new Schema({
   make: {
     type: String,
   },
@@ -48,9 +48,9 @@ const SettingSchema = new Schema({
   },
 });
 
-SettingSchema.plugin(mongoosePaginate);
+CarSchema.plugin(mongoosePaginate);
 
-const name = 'Setting';
-const schema = SettingSchema;
+const name = 'Car';
+const schema = CarSchema;
 
 export { name, schema };

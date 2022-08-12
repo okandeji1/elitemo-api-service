@@ -65,7 +65,6 @@ export const getConnection = (connection: string | undefined = undefined) => {
     logger.log('error', 'Connection is not set for the tenant database.');
     throw new AppError('Connection is not set for the tenant database.', 412);
   }
-  logger.log('info', 'Database connected');
   return conn;
 };
 

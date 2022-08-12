@@ -27,10 +27,13 @@ export const tenantSetUp = catchAsyncError(async (req: Request, res: Response) =
   const test = generateId({ suffix: 'sk-test' });
   const live = generateId({ suffix: 'sk' });
 
+  const whitelist = ['0.0.0.0', '::1'];
+
   obj.apiKey = {
     live,
     test,
   };
+  obj.security = { whitelist };
 
   const settings = await tenantModels.Setting.findOneAndUpdate(
     {},
@@ -53,10 +56,9 @@ export const tenantSetUp = catchAsyncError(async (req: Request, res: Response) =
   });
 });
 
-export const registerTenant = catchAsyncError(async (req: Request, res: Response) => {
-  const tenantConnection = getConnectionByName(req.query.tenant);
+export const registerTenant = catchAsyncError(async (req, res) => {
+  const tenantConnection = getConnection(req.query.tenant);
   const { models: tenantModels } = tenantConnection;
-  const obj = req.body;
 
   const query = { username: tenantConnection.name };
 
@@ -69,13 +71,17 @@ export const registerTenant = catchAsyncError(async (req: Request, res: Response
 
   // Get tenantId
   const tenant = await tenantModels.Tenant.findOne(query).lean();
-  obj.username = tenantConnection.name;
-  obj.userId = tenant.username;
+  const passwordHash = await bcrypt.hash('1234567', 10);
 
-  const passwordHash = await bcrypt.hash(obj.password, 10);
-  obj.password = passwordHash;
-
-  const newUser = await tenantModels.User.create(obj);
+  const newUser = await tenantModels.User.create({
+    username: tenantConnection.name,
+    password: passwordHash,
+    role: 'tenant',
+    firstName: tenantConnection.name,
+    lastName: tenantConnection.name,
+    email: `tenant@${tenantConnection.name}.com`,
+    userId: tenant.tenantId,
+  });
   if (!newUser) {
     throw new AppError('Internal server error', 500);
   }
@@ -88,7 +94,7 @@ export const registerTenant = catchAsyncError(async (req: Request, res: Response
       role: newUser.role,
       firstName: newUser.firstName,
       lastName: newUser.lastName,
-      id: newUser.id,
+      id: newUser._id,
       userId: newUser.userId,
       createdAt: newUser.createdAt,
     },

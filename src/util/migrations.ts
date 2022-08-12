@@ -4,10 +4,12 @@ import { Request, Response, Router } from 'express';
 import { AppError, catchAsyncError } from './appError';
 import { getConnection } from '../database/models';
 
+const config = process.env;
+const { CLOUDINARY_URL, CONNECTION_NAME } = config;
 export const migrationRouter = Router();
 
 export const migrate = catchAsyncError(async (req: Request, res: Response) => {
-  const connectionName: any = process.env.CONNECTION_NAME;
+  const connectionName: any = CONNECTION_NAME;
 
   const tenantConnection = getConnection(connectionName);
   const { models: tenantModels } = tenantConnection;
@@ -15,7 +17,7 @@ export const migrate = catchAsyncError(async (req: Request, res: Response) => {
   const obj: any = {};
 
   obj.userCount = 1000;
-  obj.cloudinaryUrl = 'cloudinary://359952456186874:eiv9WUKcgbuR7a40-mD1RtvN61c@dkrebzvjo';
+  obj.cloudinaryUrl = CLOUDINARY_URL;
 
   const setting = await tenantModels.Setting.create(obj);
 
