@@ -5,6 +5,9 @@ const CarSchema = new Schema({
   make: {
     type: String,
   },
+  model: {
+    type: String,
+  },
   brand: {
     type: String,
   },
@@ -26,7 +29,7 @@ const CarSchema = new Schema({
   category: {
     type: String,
   },
-  merchant: {
+  dealer: {
     type: String,
   },
   specifications: {

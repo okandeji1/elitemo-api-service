@@ -2,6 +2,9 @@ import mongoose from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
 
 const UserSchema = new mongoose.Schema({
+  userId: {
+    type: String,
+  },
   firstName: {
     type: String,
   },

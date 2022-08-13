@@ -146,34 +146,7 @@ export const logActivity = async (options: any) => {
 };
 
 export const normalize = async (req, res, next) => {
-  req.body = {
-    ...req.body,
-    phone: {
-      code: req.body.phoneCode,
-      number: req.body.phoneNumber,
-    },
-    bankDetails: {
-      personal: [
-        {
-          bankName: req.body.bankName,
-          bankCode: req.body.bankCode,
-          accountNumber: req.body.accountNumber,
-          accountName: req.body.accountName,
-          isDefault: true,
-        },
-      ],
-    },
-  };
-  delete req.body.phoneCode;
-  delete req.body.phoneNumber;
-  delete req.body.bankName;
-  delete req.body.bankCode;
-  delete req.body.accountNumber;
-  delete req.body.accountName;
-  delete req.body.indoorPhoto;
-  delete req.body.outdoorPhoto;
-  delete req.body.passportPhoto;
-  delete req.body.idCard;
+  delete req.body.image;
 
   next();
 };

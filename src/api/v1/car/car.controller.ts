@@ -1,5 +1,6 @@
+import { fileUpload } from '../../../@core/universal';
 import { getConnection } from '../../../database/models';
-import { catchAsyncError } from '../../../util/appError';
+import { AppError, catchAsyncError } from '../../../util/appError';
 
 export const getCars = catchAsyncError(async (req, res) => {
   const obj = req.query;
@@ -45,5 +46,46 @@ export const getCars = catchAsyncError(async (req, res) => {
       hasNextPage: cars.hasNextPage,
       hasPrevPage: cars.hasPrevPage,
     },
+  });
+});
+
+export const addCar = catchAsyncError(async (req, res) => {
+  const tenantConnection = getConnection(req.query.tenant);
+  const { models: tenantModels } = tenantConnection;
+  const obj = req.body;
+  // const query = { model: obj.model };
+
+  // const car = await tenantModels.Car.findOne(query);
+
+  // if (car) {
+  //   throw new AppError('car already exist', 400);
+  // }
+
+  if (Object.keys(req.files).length < 1) {
+    return res.status(400).json({
+      status: false,
+      message: 'you must upload image',
+    });
+  }
+  const upload = await fileUpload({
+    files: req.files,
+    connection: tenantConnection,
+    folder: 'car',
+  });
+
+  if (upload.status) {
+    obj.imgUrl = upload.data;
+  }
+
+  const newCar: any = await tenantModels.Car.create(obj);
+
+  if (!newCar) {
+    throw new AppError('internal server error. if this persist, please contact support', 500);
+  }
+
+  return res.status(201).json({
+    status: true,
+    message: 'new car created successfully',
+    data: newCar,
   });
 });
