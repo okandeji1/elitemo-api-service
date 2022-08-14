@@ -9,6 +9,9 @@ export const MerchantSchema = new Schema({
   address: {
     type: String,
   },
+  phone: {
+    type: String,
+  },
   logo: {
     type: String,
   },
