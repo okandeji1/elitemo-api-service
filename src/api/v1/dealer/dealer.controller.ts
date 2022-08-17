@@ -1,3 +1,4 @@
+import { fileUpload } from '../../../@core/universal';
 import { getConnection } from '../../../database/models';
 import { catchAsyncError, AppError } from '../../../util/appError';
 
@@ -26,7 +27,7 @@ export const getDealers = catchAsyncError(async (req, res) => {
     projection: {},
   };
 
-  const dealers: any = await tenantModels.Merchant.paginate(query, options);
+  const dealers: any = await tenantModels.Dealer.paginate(query, options);
 
   return res.status(200).json({
     status: true,
@@ -56,7 +57,23 @@ export const addDealer = catchAsyncError(async (req, res) => {
   // Check if the user exist
   const dealer = await tenantModels.Dealer.findOne({ name: obj.name });
   if (dealer) {
-    throw new AppError('Dealer already exist', 203);
+    throw new AppError('Dealer already exist', 400);
+  }
+
+  if (Object.keys(req.files).length < 1) {
+    return res.status(400).json({
+      status: false,
+      message: 'you must upload image',
+    });
+  }
+  const upload = await fileUpload({
+    files: req.files,
+    connection: tenantConnection,
+    folder: 'dealers',
+  });
+
+  if (upload.status) {
+    obj.logo = upload.data.image[0];
   }
 
   const addDealer = await tenantModels.Dealer.create(obj);

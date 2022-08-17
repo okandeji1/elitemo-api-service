@@ -5,7 +5,6 @@ export const addDealerSchema = joi.object({
   name: joi.string().required(),
   address: joi.string().required(),
   phone: joi.string().required(),
-  logo: joi.string().required(),
 });
 
 export const getDealersShema = joi.object({

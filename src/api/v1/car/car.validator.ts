@@ -23,7 +23,6 @@ export const addCarSchema = joi.object({
   description: joi.string(),
   costPrice: joi.number().integer().positive().invalid(0).required(),
   sellingPrice: joi.number().integer().positive().invalid(0),
-  image: joi.string().required(),
   features: joi.array().items().required(),
   specifications: joi.object({
     fuelType: joi.string(),

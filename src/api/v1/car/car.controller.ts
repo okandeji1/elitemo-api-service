@@ -70,7 +70,7 @@ export const addCar = catchAsyncError(async (req, res) => {
   const upload = await fileUpload({
     files: req.files,
     connection: tenantConnection,
-    folder: 'car',
+    folder: 'cars',
   });
 
   if (upload.status) {

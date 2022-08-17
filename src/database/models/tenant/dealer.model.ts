@@ -1,7 +1,7 @@
 import { Schema } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
 
-export const MerchantSchema = new Schema({
+export const DealerSchema = new Schema({
   name: {
     type: String,
     required: true,
@@ -24,9 +24,9 @@ export const MerchantSchema = new Schema({
     default: Date.now,
   },
 });
-MerchantSchema.plugin(mongoosePaginate);
+DealerSchema.plugin(mongoosePaginate);
 
-const name = 'Merchant';
-const schema = MerchantSchema;
+const name = 'Dealer';
+const schema = DealerSchema;
 
 export { name, schema };
