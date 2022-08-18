@@ -3,6 +3,7 @@ import joi from '@hapi/joi';
 
 export const addDealerSchema = joi.object({
   name: joi.string().required(),
+  email: joi.string().required().email(),
   address: joi.string().required(),
   phone: joi.string().required(),
 });

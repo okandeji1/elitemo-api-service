@@ -18,7 +18,7 @@ export const addCarSchema = joi.object({
   brand: joi.string().required(),
   make: joi.string().required(),
   dealer: joi.string().required(),
-  category: joi.string().required(),
+  category: joi.string(),
   type: joi.string().required(),
   description: joi.string(),
   costPrice: joi.number().integer().positive().invalid(0).required(),

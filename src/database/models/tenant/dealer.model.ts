@@ -12,6 +12,9 @@ export const DealerSchema = new Schema({
   phone: {
     type: String,
   },
+  email: {
+    type: String,
+  },
   logo: {
     type: String,
   },
