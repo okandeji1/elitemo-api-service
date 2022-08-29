@@ -146,6 +146,11 @@ export const logActivity = async (options: any) => {
 };
 
 export const normalize = async (req, res, next) => {
+  req.body = {
+    ...req.body,
+    specifications: JSON.parse(req.body.specifications),
+    features: JSON.parse(req.body.features),
+  };
   delete req.body.image;
 
   next();

@@ -46,7 +46,6 @@ export const fileUpload = async (options: any): Promise<any> => {
           return true;
         });
       }
-      // Update user
     }
     return { status: true, data: miscellaneous };
   } catch (error: any) {

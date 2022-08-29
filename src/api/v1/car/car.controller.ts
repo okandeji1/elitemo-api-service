@@ -74,7 +74,7 @@ export const addCar = catchAsyncError(async (req, res) => {
   });
 
   if (upload.status) {
-    obj.imgUrl = upload.data;
+    obj.images = upload.data.image;
   }
 
   const newCar: any = await tenantModels.Car.create(obj);

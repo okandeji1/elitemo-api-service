@@ -38,7 +38,7 @@ const CarSchema = new Schema({
   features: {
     type: Schema.Types.Mixed,
   },
-  imgUrl: {
+  images: {
     type: Schema.Types.Mixed,
   },
   createdAt: {

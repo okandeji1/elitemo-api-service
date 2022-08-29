@@ -26,7 +26,7 @@ export const addCarSchema = joi.object({
   features: joi.array().items().required(),
   specifications: joi.object({
     fuelType: joi.string(),
-    way: joi.string(),
+    speed: joi.string(),
     transmission: joi.string(),
     gears: joi.string(),
     year: joi.string(),
