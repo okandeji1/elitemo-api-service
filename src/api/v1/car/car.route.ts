@@ -16,7 +16,6 @@ carRouter.get(
   '/',
   inputValidator({ query: getCarSchema }),
   resolveConnection,
-  isAuthenticated,
   carController.getCars,
 );
 

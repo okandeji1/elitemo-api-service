@@ -258,18 +258,6 @@ export const getUsers = catchAsyncError(async (req, res) => {
     if (key === 'tenant' || key === 'limit' || key === 'page') {
       continue;
     }
-    if (key === 'status') {
-      // @ts-ignore
-      const items = value.split(',');
-      let $or: any = [];
-      for (const item of items) {
-        $or = [...$or, { [key]: item }];
-      }
-      query.$and = query.$and || [];
-      query.$and.push({ $or });
-
-      continue;
-    }
     query = { ...query, [key]: value };
   }
 
