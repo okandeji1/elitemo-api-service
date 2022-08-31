@@ -1,6 +1,14 @@
 // /* eslint-disable import/prefer-default-export */
 import express from 'express';
-import { inputValidator, isAuthenticated, resolveConnection } from '../../../util/middleware';
+import multer from 'multer';
+
+const upload = multer({ dest: `${process.env.APP_ROOT}./uploads` });
+import {
+  inputValidator,
+  isAuthenticated,
+  normalize,
+  resolveConnection,
+} from '../../../util/middleware';
 import * as blogController from './blog.controller';
 import { addPostSchema, getPostsShema } from './blog.validator';
 
@@ -10,12 +18,13 @@ blogRouter.get(
   '/',
   inputValidator({ query: getPostsShema }),
   resolveConnection,
-  isAuthenticated,
   blogController.getPosts,
 );
 
 blogRouter.post(
-  '/add',
+  '/add/post',
+  upload.fields([{ name: 'image', maxCount: 4 }]),
+  normalize,
   inputValidator({ body: addPostSchema }),
   resolveConnection,
   isAuthenticated,

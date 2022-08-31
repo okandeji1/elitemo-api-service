@@ -146,12 +146,20 @@ export const logActivity = async (options: any) => {
 };
 
 export const normalize = async (req, res, next) => {
-  req.body = {
-    ...req.body,
-    specifications: JSON.parse(req.body.specifications),
-    features: JSON.parse(req.body.features),
-  };
-  delete req.body.image;
+  // validate
+  const specs = req?.body?.specifications;
+  const feats = req?.body?.features;
+
+  if (specs && feats) {
+    // Avoiding json at position 0 for other requests with image uploads and without spec and feats
+    req.body = {
+      ...req.body,
+      specifications: JSON.parse(req?.body?.specifications),
+      features: JSON.parse(req?.body?.features),
+    };
+  }
+
+  delete req?.body?.image;
 
   next();
 };

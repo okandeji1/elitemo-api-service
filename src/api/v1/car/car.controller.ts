@@ -53,13 +53,13 @@ export const addCar = catchAsyncError(async (req, res) => {
   const tenantConnection = getConnection(req.query.tenant);
   const { models: tenantModels } = tenantConnection;
   const obj = req.body;
-  // const query = { model: obj.model };
+  const query = { model: obj.model };
 
-  // const car = await tenantModels.Car.findOne(query);
+  const car = await tenantModels.Car.findOne(query);
 
-  // if (car) {
-  //   throw new AppError('car already exist', 400);
-  // }
+  if (car) {
+    throw new AppError('car already exist', 400);
+  }
 
   if (Object.keys(req.files).length < 1) {
     return res.status(400).json({
@@ -67,6 +67,7 @@ export const addCar = catchAsyncError(async (req, res) => {
       message: 'you must upload image',
     });
   }
+
   const upload = await fileUpload({
     files: req.files,
     connection: tenantConnection,

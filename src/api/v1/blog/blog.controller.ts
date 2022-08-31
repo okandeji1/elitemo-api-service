@@ -1,3 +1,4 @@
+import { fileUpload } from '../../../@core/universal';
 import { getConnection } from '../../../database/models';
 import { catchAsyncError, AppError } from '../../../util/appError';
 
@@ -53,10 +54,21 @@ export const addPost = catchAsyncError(async (req, res) => {
     throw new AppError('You do not have sufficient permission to perform this operation', 403);
   }
 
-  // Check if the user exist
-  const post = await tenantModels.Blog.findOne({ name: obj.name });
-  if (post) {
-    throw new AppError('post already exist', 203);
+  if (Object.keys(req.files).length < 1) {
+    return res.status(400).json({
+      status: false,
+      message: 'you must upload image',
+    });
+  }
+
+  const upload = await fileUpload({
+    files: req.files,
+    connection: tenantConnection,
+    folder: 'blogs',
+  });
+
+  if (upload.status) {
+    obj.images = upload.data.image;
   }
 
   const addpost = await tenantModels.Blog.create(obj);
