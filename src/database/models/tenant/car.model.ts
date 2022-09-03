@@ -1,8 +1,11 @@
 import { Schema } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
 
-const SettingSchema = new Schema({
+const CarSchema = new Schema({
   make: {
+    type: String,
+  },
+  model: {
     type: String,
   },
   brand: {
@@ -26,7 +29,7 @@ const SettingSchema = new Schema({
   category: {
     type: String,
   },
-  merchant: {
+  dealer: {
     type: String,
   },
   specifications: {
@@ -35,8 +38,8 @@ const SettingSchema = new Schema({
   features: {
     type: Schema.Types.Mixed,
   },
-  imgUrl: {
-    type: String,
+  images: {
+    type: Schema.Types.Mixed,
   },
   createdAt: {
     type: Date,
@@ -48,9 +51,9 @@ const SettingSchema = new Schema({
   },
 });
 
-SettingSchema.plugin(mongoosePaginate);
+CarSchema.plugin(mongoosePaginate);
 
-const name = 'Setting';
-const schema = SettingSchema;
+const name = 'Car';
+const schema = CarSchema;
 
 export { name, schema };

@@ -14,35 +14,17 @@ export const registerTenantSchema = joi.object({
 
 export const registerUserSchema = joi.object({
   username: joi.string(),
-  // password: joi.string().required(),
-  role: joi
-    .string()
-    .valid('tenant', 'area-manager', 'super-agent', 'agent', 'cashier', 'online-customer', 'staff')
-    .required(),
-  roles: joi.array().items(joi.string().required()),
-  designation: joi.string(),
-  parent: joi.string(),
+  password: joi.string().required(),
+  role: joi.string().valid('tenant', 'super-admin', 'admin', 'staff').required(),
   firstName: joi.string(),
   lastName: joi.string(),
-  state: joi.string().required(),
+  state: joi.string(),
   country: joi.string(),
   dob: joi.date(),
   email: joi.string().email().required(),
-  phone: joi.object({
-    code: joi.string(),
-    number: joi.string(),
-  }),
-  bankDetails: joi.object({
-    personal: joi.array().items(),
-  }),
+  phone: joi.string(),
   address: joi.string(),
   gender: joi.string(),
-  commission: joi.object({
-    plan: joi.string(),
-    percentage: joi.string(),
-  }),
-  lga: joi.string().required(),
-  loginLink: joi.string(),
 });
 
 export const updateUserSchema = joi.object({
@@ -95,10 +77,8 @@ export const getUserSchema = joi.object({
   username: joi.string(),
   status: joi.string(),
   role: joi.string(),
-  parent: joi.string(),
   limit: joi.number().min(0).max(1000).default(50),
   page: joi.number().min(1).default(1),
-  tenant: joi.string(),
 });
 
 export const changePasswordSchema = joi.object({

@@ -14,6 +14,9 @@ process.env.APP_ROOT = path.join(__dirname, '../');
 
 // import routes
 import { userRouter } from './api/v1/user/user.route';
+import { dealerRouter } from './api/v1/dealer/dealer.route';
+import { carRouter } from './api/v1/car/car.route';
+import { blogRouter } from './api/v1/blog/blog.route';
 
 // @ts-ignore
 // import { migrationRouter } from './util/migrations';
@@ -61,6 +64,9 @@ app.use(express.json());
 
 // routes
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/dealers', dealerRouter);
+app.use('/api/v1/cars', carRouter);
+app.use('/api/v1/blogs', blogRouter);
 // migration
 // app.use('/api/v1/migrations', migrationRouter);
 

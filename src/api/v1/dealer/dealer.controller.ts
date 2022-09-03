@@ -1,7 +1,8 @@
+import { fileUpload } from '../../../@core/universal';
 import { getConnection } from '../../../database/models';
 import { catchAsyncError, AppError } from '../../../util/appError';
 
-export const getMerchants = catchAsyncError(async (req, res) => {
+export const getDealers = catchAsyncError(async (req, res) => {
   const tenantConnection = getConnection(req.query.tenant);
   const { models: tenantModels } = tenantConnection;
   const obj = req.query;
@@ -26,25 +27,25 @@ export const getMerchants = catchAsyncError(async (req, res) => {
     projection: {},
   };
 
-  const merchants: any = await tenantModels.Merchant.paginate(query, options);
+  const dealers: any = await tenantModels.Dealer.paginate(query, options);
 
   return res.status(200).json({
     status: true,
-    message: 'found merchant(s)',
-    data: merchants.docs,
+    message: 'found dealer(s)',
+    data: dealers.docs,
     meta: {
-      total: merchants.totalDocs,
-      skipped: merchants.page * merchants.limit,
-      perPage: merchants.limit,
-      page: merchants.page,
-      pageCount: merchants.totalPages,
-      hasNextPage: merchants.hasNextPage,
-      hasPrevPage: merchants.hasPrevPage,
+      total: dealers.totalDocs,
+      skipped: dealers.page * dealers.limit,
+      perPage: dealers.limit,
+      page: dealers.page,
+      pageCount: dealers.totalPages,
+      hasNextPage: dealers.hasNextPage,
+      hasPrevPage: dealers.hasPrevPage,
     },
   });
 });
 
-export const addMerchant = catchAsyncError(async (req, res) => {
+export const addDealer = catchAsyncError(async (req, res) => {
   const tenantConnection = getConnection(req.query.tenant);
   const { models: tenantModels } = tenantConnection;
   const obj = req.body;
@@ -54,20 +55,36 @@ export const addMerchant = catchAsyncError(async (req, res) => {
   }
 
   // Check if the user exist
-  const merchant = await tenantModels.Merchant.findOne({ name: obj.name });
-  if (merchant) {
-    throw new AppError('Merchant already exist', 203);
+  const dealer = await tenantModels.Dealer.findOne({ name: obj.name });
+  if (dealer) {
+    throw new AppError('Dealer already exist', 400);
   }
 
-  const addMerchant = await tenantModels.Merchant.create(obj);
+  if (Object.keys(req.files).length < 1) {
+    return res.status(400).json({
+      status: false,
+      message: 'you must upload image',
+    });
+  }
+  const upload = await fileUpload({
+    files: req.files,
+    connection: tenantConnection,
+    folder: 'dealers',
+  });
 
-  if (!addMerchant) {
+  if (upload.status) {
+    obj.logo = upload.data.image[0];
+  }
+
+  const addDealer = await tenantModels.Dealer.create(obj);
+
+  if (!addDealer) {
     throw new AppError('Internal server error', 500);
   }
 
   return res.status(200).json({
     status: true,
-    data: addMerchant,
-    message: 'Merchant added successfuly',
+    data: addDealer,
+    message: 'Dealer added successfuly',
   });
 });

@@ -2,15 +2,15 @@ import { Schema } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
 
 export const BlogSchema = new Schema({
-  title: {
+  header: {
     type: String,
     required: true,
   },
   description: {
     type: String,
   },
-  img: {
-    type: String,
+  images: {
+    type: Schema.Types.Mixed,
   },
   createdAt: {
     type: Date,

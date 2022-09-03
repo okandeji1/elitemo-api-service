@@ -1,15 +1,16 @@
 import { fileUpload } from '../../../@core/universal';
 import { getConnection } from '../../../database/models';
-import { catchAsyncError, AppError } from '../../../util/appError';
+import { AppError, catchAsyncError } from '../../../util/appError';
 
-export const getPosts = catchAsyncError(async (req, res) => {
+export const getCars = catchAsyncError(async (req, res) => {
+  const obj = req.query;
+
   const tenantConnection = getConnection(req.query.tenant);
   const { models: tenantModels } = tenantConnection;
-  const obj = req.query;
 
   const { limit, page } = req.query;
 
-  let query = {};
+  let query: any = {};
   for (const [key, value] of Object.entries(obj)) {
     if (key === 'tenant' || key === 'limit' || key === 'page') {
       continue;
@@ -24,34 +25,40 @@ export const getPosts = catchAsyncError(async (req, res) => {
     collation: {
       locale: 'en',
     },
-    projection: {},
+    lean: true,
+    projection: {
+      password: 0,
+    },
   };
 
-  const posts: any = await tenantModels.Blog.paginate(query, options);
+  const cars: any = await tenantModels.Car.paginate(query, options);
 
   return res.status(200).json({
     status: true,
-    message: 'found post(s)',
-    data: posts.docs,
+    message: 'found car(s)',
+    data: cars.docs,
     meta: {
-      total: posts.totalDocs,
-      skipped: posts.page * posts.limit,
-      perPage: posts.limit,
-      page: posts.page,
-      pageCount: posts.totalPages,
-      hasNextPage: posts.hasNextPage,
-      hasPrevPage: posts.hasPrevPage,
+      total: cars.totalDocs,
+      skipped: cars.page * cars.limit,
+      perPage: cars.limit,
+      page: cars.page,
+      pageCount: cars.totalPages,
+      hasNextPage: cars.hasNextPage,
+      hasPrevPage: cars.hasPrevPage,
     },
   });
 });
 
-export const addPost = catchAsyncError(async (req, res) => {
+export const addCar = catchAsyncError(async (req, res) => {
   const tenantConnection = getConnection(req.query.tenant);
   const { models: tenantModels } = tenantConnection;
   const obj = req.body;
+  const query = { model: obj.model };
 
-  if (req?.user?.role !== 'tenant' && req?.user?.role !== 'super-admin') {
-    throw new AppError('You do not have sufficient permission to perform this operation', 403);
+  const car = await tenantModels.Car.findOne(query);
+
+  if (car) {
+    throw new AppError('car already exist', 400);
   }
 
   if (Object.keys(req.files).length < 1) {
@@ -64,22 +71,22 @@ export const addPost = catchAsyncError(async (req, res) => {
   const upload = await fileUpload({
     files: req.files,
     connection: tenantConnection,
-    folder: 'blogs',
+    folder: 'cars',
   });
 
   if (upload.status) {
     obj.images = upload.data.image;
   }
 
-  const addpost = await tenantModels.Blog.create(obj);
+  const newCar: any = await tenantModels.Car.create(obj);
 
-  if (!addpost) {
-    throw new AppError('Internal server error', 500);
+  if (!newCar) {
+    throw new AppError('internal server error. if this persist, please contact support', 500);
   }
 
-  return res.status(200).json({
+  return res.status(201).json({
     status: true,
-    data: addpost,
-    message: 'post added successfuly',
+    message: 'new car created successfully',
+    data: newCar,
   });
 });

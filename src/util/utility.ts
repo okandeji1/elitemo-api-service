@@ -4,8 +4,7 @@ import xml from 'xml2js';
 import { redis } from '../database/redis';
 import { AppError } from './appError';
 import { getConnection } from '../database/models';
-
-const JWT_SECRET: any = process.env.CONFIG;
+const JWT_SECRET: any = process.env.JWT_SECRET;
 
 export const makeToken = (user, lifespan = '1d') =>
   jwt.sign({ user }, JWT_SECRET, {
