@@ -19,7 +19,7 @@ import { carRouter } from './api/v1/car/car.route';
 import { blogRouter } from './api/v1/blog/blog.route';
 
 // @ts-ignore
-// import { migrationRouter } from './util/migrations';
+import { migrationRouter } from './util/migrations';
 
 // set up error handler
 process.on('uncaughtException', (e: any) => {
@@ -68,7 +68,7 @@ app.use('/api/v1/dealers', dealerRouter);
 app.use('/api/v1/cars', carRouter);
 app.use('/api/v1/blogs', blogRouter);
 // migration
-// app.use('/api/v1/migrations', migrationRouter);
+app.use('/api/v1/migrations', migrationRouter);
 
 app.all('*', (req, _res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
