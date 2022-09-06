@@ -4,7 +4,7 @@
   "description": "automobile service",
   "main": "index.js",
   "scripts": {
-    "start": "doppler run --command='NODE_PATH=./build node build/index.js'",
+    "start": "NODE_PATH=./build node build/index.js",
     "build": "tsc",
     "start:dev": "doppler run --command='tsc-watch --noClear --onSuccess \"node --inspect=0.0.0.0:9229 ./build/index.js\"'",
     "test": "echo \"Error: no test specified\" && exit 1",
